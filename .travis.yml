@@ -1,0 +1,25 @@
+sudo: required
+services: 
+    - docker
+
+
+before_install:
+    - docker build -t hamidbasri/docker-react-test -f ./client/Dockerfile.dev ./client
+
+
+script:
+    - docker run hamidbasri/docker-react-test yarn test -- --coverage
+
+
+after_success:
+    - docker build -t hamidbasri/complex-client ./client
+    - docker build -t hamidbasri/complex-nginx ./nginx
+    - docker build -t hamidbasri/complex-server ./server
+    - docker build -t hamidbasri/complex-worker ./worker
+
+    - echo "$Docker_PASSWORD" | docker login -u "$Docker_ID" --password-stdin
+
+    - docker push hamidbasri/complex-client
+    - docker push hamidbasri/complex-nginx
+    - docker push hamidbasri/complex-server
+    - docker push hamidbasri/complex-worker
